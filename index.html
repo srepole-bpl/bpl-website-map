@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photography Locations Map</title>
+    <title>BPL Enclosure Solutions - Territory Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
             margin: 0;
@@ -25,9 +26,9 @@
             background: white;
             padding: 15px 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
             z-index: 1000;
-            max-width: 250px;
+            max-width: 280px;
         }
         .info-box h3 {
             margin-bottom: 5px;
@@ -38,72 +39,307 @@
             font-size: 14px;
             color: #666;
         }
+        .contact-card {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .contact-card:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .contact-name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        .contact-location {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .contact-phone {
+            font-size: 13px;
+            color: #0066cc;
+            margin-bottom: 3px;
+            text-decoration: none;
+            display: block;
+        }
+        .contact-phone:hover {
+            text-decoration: underline;
+        }
+        .contact-email {
+            font-size: 13px;
+            color: #0066cc;
+            text-decoration: none;
+            display: block;
+            word-break: break-all;
+        }
+        .contact-email:hover {
+            text-decoration: underline;
+        }
+        .leaflet-popup-content {
+            margin: 15px;
+            min-width: 250px;
+        }
+        .popup-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #0066cc;
+        }
     </style>
 </head>
 <body>
     <div class="info-box">
-        <h3>📍 Our Locations</h3>
-        <p>Serving clients across the United States</p>
+        <h3>📍 BPL Locations</h3>
+        <p>Click markers to view regional contacts</p>
     </div>
     <div id="map"></div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Location data
-        const locations = [
-            { name: 'Atlanta, GA', lat: 33.7490, lng: -84.3880 },
-            { name: 'Charlotte, NC', lat: 35.2271, lng: -80.8431 },
-            { name: 'Raleigh, NC', lat: 35.7796, lng: -78.6382 },
-            { name: 'Denver, CO', lat: 39.7392, lng: -104.9903 },
-            { name: 'Madison, WI', lat: 43.0731, lng: -89.4012 },
-            { name: 'Washington, DC', lat: 38.9072, lng: -77.0369 },
-            { name: 'Birmingham, AL', lat: 33.5186, lng: -86.8104 },
-            { name: 'Detroit, MI', lat: 42.3314, lng: -83.0458 },
-            { name: 'Minneapolis, MN', lat: 44.9778, lng: -93.2650 },
-            { name: 'Nashville, TN', lat: 36.1627, lng: -86.7816 },
-            { name: 'Houston, TX', lat: 29.7604, lng: -95.3698 },
-            { name: 'Austin, TX', lat: 30.2672, lng: -97.7431 },
-            { name: 'Dallas, TX', lat: 32.7767, lng: -96.7970 },
-            { name: 'Columbus, OH', lat: 39.9612, lng: -82.9988 },
-            { name: 'Milwaukee, WI', lat: 43.0389, lng: -87.9065 }
-        ];
-
-        function initMap() {
-            // Calculate center point
-            const centerLat = locations.reduce((sum, loc) => sum + loc.lat, 0) / locations.length;
-            const centerLng = locations.reduce((sum, loc) => sum + loc.lng, 0) / locations.length;
-
-            // Create map
-            const map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 5,
-                center: { lat: centerLat, lng: centerLng },
-                styles: [
+        // Location data with contact information
+        const territories = [
+            {
+                name: 'Alabama',
+                lat: 33.5186,
+                lng: -86.8104,
+                city: 'Birmingham, AL',
+                contacts: [
                     {
-                        featureType: 'poi',
-                        elementType: 'labels',
-                        stylers: [{ visibility: 'off' }]
+                        name: 'PHIL MASSA',
+                        location: 'Birmingham, AL',
+                        phone: '+1 470.568.4169',
+                        email: 'pmassa@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'TONY FERRANTE',
+                        location: 'Birmingham, AL',
+                        phone: '+1 470.375.0291',
+                        email: 'tferrante@bpl-enclosure.com'
                     }
                 ]
+            },
+            {
+                name: 'Colorado',
+                lat: 39.7392,
+                lng: -104.9903,
+                city: 'Denver, CO',
+                contacts: [
+                    {
+                        name: 'DAVID YOUNG',
+                        location: 'Denver, CO',
+                        phone: '+1 470.617.9188',
+                        email: 'dyoung@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'KELLY COLLINS',
+                        location: 'Denver, CO',
+                        phone: '+1 470.924.2953',
+                        email: 'kcollins@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Georgia (HQ)',
+                lat: 33.7490,
+                lng: -84.3880,
+                city: 'Atlanta, GA',
+                contacts: [
+                    {
+                        name: 'MARK JONES',
+                        location: 'Atlanta, GA (HQ)',
+                        phone: '+1 470.204.0124',
+                        email: 'mjones@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'SHAWN ROBINSON',
+                        location: 'Atlanta, GA (HQ)',
+                        phone: '+1 470.720.5826',
+                        email: 'srobinson@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Michigan | Ohio',
+                lat: 42.3314,
+                lng: -83.0458,
+                city: 'Detroit, MI',
+                contacts: [
+                    {
+                        name: 'LYLE AXELARRIS',
+                        location: 'Detroit, MI',
+                        phone: '+1 470.419.3484',
+                        email: 'laxelarris@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Minnesota',
+                lat: 44.9778,
+                lng: -93.2650,
+                city: 'Minneapolis, MN',
+                contacts: [
+                    {
+                        name: 'LEE DURSTON',
+                        location: 'Minneapolis, MN',
+                        phone: '+1 651.384.1345',
+                        email: 'ldurston@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'NICK HALL',
+                        location: 'Minneapolis, MN',
+                        phone: '+1 651.384.1365',
+                        email: 'nhall@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'North Carolina',
+                lat: 35.2271,
+                lng: -80.8431,
+                city: 'Charlotte, NC',
+                contacts: [
+                    {
+                        name: 'ANDREW SHUSTER',
+                        location: 'Charlotte, NC',
+                        phone: '+1 470.204.0125',
+                        email: 'ashuster@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'JOHN GRAZ',
+                        location: 'Atlanta, GA (HQ)',
+                        phone: '+1 470.207.0500',
+                        email: 'jgraz@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Tennessee',
+                lat: 36.1627,
+                lng: -86.7816,
+                city: 'Nashville, TN',
+                contacts: [
+                    {
+                        name: 'SHARON GEOMAAT',
+                        location: 'Nashville, TN',
+                        phone: '+1 470.289.2754',
+                        email: 'sgeomaat@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'MIKE SEXTON',
+                        location: 'Nashville, TN',
+                        phone: '+1 651.384.1365',
+                        email: 'msexton@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Texas',
+                lat: 29.7604,
+                lng: -95.3698,
+                city: 'Houston, TX',
+                contacts: [
+                    {
+                        name: 'RUSS RAYMOND',
+                        location: 'Houston, TX',
+                        phone: '+1 713.855.8873',
+                        email: 'rraymond@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'KEVIN PALMA',
+                        location: 'Houston, TX',
+                        phone: '+1 713.454.3259',
+                        email: 'kpalma@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Wisconsin',
+                lat: 43.0389,
+                lng: -87.9065,
+                city: 'Milwaukee, WI',
+                contacts: [
+                    {
+                        name: 'JILL MCCLELLAN',
+                        location: 'Milwaukee, WI',
+                        phone: '+1 470.290.3671',
+                        email: 'jmcclellan@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'GREG KEMPEN',
+                        location: 'Milwaukee, WI',
+                        phone: '+1 470.615.6388',
+                        email: 'gkempen@bpl-enclosure.com'
+                    }
+                ]
+            },
+            {
+                name: 'Washington, D.C.',
+                lat: 38.9072,
+                lng: -77.0369,
+                city: 'Washington, D.C.',
+                contacts: [
+                    {
+                        name: 'BRITTON BAINE',
+                        location: 'Washington, D.C.',
+                        phone: '+1 240.979.6372',
+                        email: 'bbaine@bpl-enclosure.com'
+                    },
+                    {
+                        name: 'DAN PROWS',
+                        location: 'Atlanta, GA (HQ)',
+                        phone: '+1 470.280.4280',
+                        email: 'dprows@bpl-enclosure.com'
+                    }
+                ]
+            }
+        ];
+
+        // Initialize map
+        const map = L.map('map').setView([38.5, -95], 4);
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Custom marker icon
+        const customIcon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="background-color: #0066cc; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+        });
+
+        // Add markers with contact info
+        territories.forEach(territory => {
+            let popupContent = `<div class="popup-title">${territory.name}</div>`;
+            
+            territory.contacts.forEach(contact => {
+                popupContent += `
+                    <div class="contact-card">
+                        <div class="contact-name">${contact.name}</div>
+                        <div class="contact-location">${contact.location}</div>
+                        <a href="tel:${contact.phone}" class="contact-phone">${contact.phone}</a>
+                        <a href="mailto:${contact.email}" class="contact-email">${contact.email}</a>
+                    </div>
+                `;
             });
 
-            // Add markers
-            locations.forEach(location => {
-                const marker = new google.maps.Marker({
-                    position: { lat: location.lat, lng: location.lng },
-                    map: map,
-                    title: location.name,
-                    animation: google.maps.Animation.DROP
+            const marker = L.marker([territory.lat, territory.lng], { icon: customIcon })
+                .addTo(map)
+                .bindPopup(popupContent, {
+                    maxWidth: 300,
+                    className: 'custom-popup'
                 });
-
-                const infoWindow = new google.maps.InfoWindow({
-                    content: `<div style="padding: 10px;"><strong>${location.name}</strong></div>`
-                });
-
-                marker.addListener('click', () => {
-                    infoWindow.open(map, marker);
-                });
-            });
-        }
+        });
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHBriZvZ1hiZu3LMHDvDwvJBSkDL4bwgg&callback=initMap" async defer></script>
 </body>
 </html>
