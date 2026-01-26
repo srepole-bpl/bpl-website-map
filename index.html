@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BPL Enclosure Solutions - Territory Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>BPL Enclosure - Locsations</title>
     <style>
         * {
             margin: 0;
@@ -80,10 +79,6 @@
         .contact-email:hover {
             text-decoration: underline;
         }
-        .leaflet-popup-content {
-            margin: 15px;
-            min-width: 250px;
-        }
         .popup-title {
             font-size: 18px;
             font-weight: 700;
@@ -92,16 +87,22 @@
             padding-bottom: 8px;
             border-bottom: 2px solid #0066cc;
         }
+        .gm-style-iw {
+            padding: 5px !important;
+        }
+        .gm-style-iw-d {
+            overflow: auto !important;
+            max-height: 400px !important;
+        }
     </style>
 </head>
 <body>
     <div class="info-box">
-        <h3>📍 BPL Locations</h3>
+        <h3>📍 BPL Territory Map</h3>
         <p>Click markers to view regional contacts</p>
     </div>
     <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Location data with contact information
         const territories = [
@@ -301,45 +302,59 @@
             }
         ];
 
-        // Initialize map
-        const map = L.map('map').setView([38.5, -95], 4);
-
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19
-        }).addTo(map);
-
-        // Custom marker icon
-        const customIcon = L.divIcon({
-            className: 'custom-marker',
-            html: '<div style="background-color: #0066cc; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
-            iconSize: [24, 24],
-            iconAnchor: [12, 12]
-        });
-
-        // Add markers with contact info
-        territories.forEach(territory => {
-            let popupContent = `<div class="popup-title">${territory.name}</div>`;
-            
-            territory.contacts.forEach(contact => {
-                popupContent += `
-                    <div class="contact-card">
-                        <div class="contact-name">${contact.name}</div>
-                        <div class="contact-location">${contact.location}</div>
-                        <a href="tel:${contact.phone}" class="contact-phone">${contact.phone}</a>
-                        <a href="mailto:${contact.email}" class="contact-email">${contact.email}</a>
-                    </div>
-                `;
+        function initMap() {
+            // Create map centered on US
+            const map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 5,
+                center: { lat: 38.5, lng: -95 },
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+                styles: [
+                    {
+                        featureType: 'poi',
+                        elementType: 'labels',
+                        stylers: [{ visibility: 'off' }]
+                    }
+                ]
             });
 
-            const marker = L.marker([territory.lat, territory.lng], { icon: customIcon })
-                .addTo(map)
-                .bindPopup(popupContent, {
-                    maxWidth: 300,
-                    className: 'custom-popup'
+            // Add markers with contact info
+            territories.forEach(territory => {
+                let popupContent = `<div style="padding: 10px; min-width: 250px; max-width: 320px;">`;
+                popupContent += `<div class="popup-title">${territory.name}</div>`;
+                
+                territory.contacts.forEach(contact => {
+                    popupContent += `
+                        <div class="contact-card">
+                            <div class="contact-name">${contact.name}</div>
+                            <div class="contact-location">${contact.location}</div>
+                            <a href="tel:${contact.phone}" class="contact-phone">${contact.phone}</a>
+                            <a href="mailto:${contact.email}" class="contact-email">${contact.email}</a>
+                        </div>
+                    `;
                 });
-        });
+                
+                popupContent += `</div>`;
+
+                const marker = new google.maps.Marker({
+                    position: { lat: territory.lat, lng: territory.lng },
+                    map: map,
+                    title: territory.name,
+                    animation: google.maps.Animation.DROP
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: popupContent,
+                    maxWidth: 350
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(map, marker);
+                });
+            });
+        }
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHBriZvZ1hiZu3LMHDvDwvJBSkDL4bwgg&callback=initMap" async defer></script>
 </body>
 </html>
